@@ -1,0 +1,75 @@
+/* Simple CSS for an entry (login/register) page */
+body {
+  background: #f5f6fa;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.entry-container {
+  background: #fff;
+  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  width: 350px;
+  max-width: 90vw;
+}
+
+.entry-container h2 {
+  margin-bottom: 1.5rem;
+  color: #273c75;
+  text-align: center;
+}
+
+.entry-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.entry-container input[type="text"],
+.entry-container input[type="password"] {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #dcdde1;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+
+.entry-container input[type="text"]:focus,
+.entry-container input[type="password"]:focus {
+  border-color: #4078c0;
+  outline: none;
+}
+
+.entry-container button {
+  padding: 0.75rem;
+  background: #4078c0;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.entry-container button:hover {
+  background: #273c75;
+}
+
+.entry-container .link {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.entry-container .link a {
+  color: #4078c0;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.entry-container .link a:hover {
+  text
