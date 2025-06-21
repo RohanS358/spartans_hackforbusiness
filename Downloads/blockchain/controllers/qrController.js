@@ -2,7 +2,7 @@ const QRTransactionService = require('../services/qrTransactionService');
 
 class QRController {
   async generateQRTransaction(req, res) {
-    try {
+    try { 
       const { senderWalletId, subAccountId, amount, senderPasskey } = req.body;
       const { qrId, qrImage } = await QRTransactionService.generateQRTransaction(
         senderWalletId,
