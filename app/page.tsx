@@ -1,14 +1,11 @@
-import React from 'react'
-import { SignIn } from './components/sign_in'
+import Navigation from "./sections/home/navigation"
+import HomePage from "./sections/home/home-page"
 
-const Home = () => {
+export default function Page() {
   return (
-    <div>
-      <div className="flex items-center justify-center h-screen">
-        <SignIn />
-      </div>
-    </div>
+    <>
+      <Navigation />
+      <HomePage />
+    </>
   )
 }
-
-export default Home
