@@ -4,7 +4,7 @@
 
 **HackForBusiness** is a blockchain-based transaction system designed to seamlessly integrate e-commerce functionalities for buying, selling, and offering services. Our platform leverages the security and transparency of blockchain technology to facilitate trustworthy transactions between users, whether they are purchasing products or hiring services.
 
-## Key Features
+## Key Featuresgit
 
 - **Blockchain Integration:** Ensures secure, transparent, and immutable transaction records.
 - **E-commerce Support:** Enables users to buy and sell products efficiently.
