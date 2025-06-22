@@ -185,3 +185,15 @@ export default function TransactionHistory() {
     </Card>
   )
 }
+
+// In api.ts or similar file
+async createTransaction(data: {
+  toAddress: string;
+  amount: number;
+  productId?: string;
+}) {
+  return this.request("/api/transactions", {
+    method: "POST", // This ensures it's a POST request
+    body: JSON.stringify(data),
+  });
+}

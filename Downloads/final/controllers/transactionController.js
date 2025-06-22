@@ -1,34 +1,24 @@
 const Transaction = require('../models/Transaction');
 const Wallet = require('../models/Wallet');
-const Blockchain = require('../blockchain');
+const Blockchain = require('../blockchain/blockchain'); // Adjust path as needed
 const ErrorResponse = require('../utils/errorResponse');
 const { decryptPrivateKey } = require('../utils/crypto');
 const { generateTransactionQR } = require('../utils/qr');
-
+// Add at the top of your file
+const Product = require('../models/Product');
 // Initialize blockchain
 
 let blockchain;
+
 try {
-  // Check what type Blockchain is and initialize accordingly
-  if (typeof Blockchain === 'function') {
-    // If Blockchain is directly the constructor
-    blockchain = new Blockchain();
-  } else if (Blockchain && typeof Blockchain.Blockchain === 'function') {
-    // If Blockchain is a module with Blockchain as a property
-    blockchain = new Blockchain.Blockchain();
-  } else {
-    console.error('Invalid Blockchain import structure');
-    throw new Error('Could not initialize blockchain');
-  }
+  blockchain = new Blockchain();
+  console.log('Blockchain initialized successfully');
 } catch (error) {
   console.error('Error initializing blockchain:', error);
-  // Create a minimal fallback implementation for testing
-  blockchain = {
-    getBalanceOfAddress: () => 0,
-    addTransaction: () => {},
-    getTransactionByHash: () => null
-  };
+  process.exit(1); // Exit if blockchain fails to initialize
 }
+// controllers/transactionController.js
+// Add to createTransaction:
 // @desc    Create a new blockchain transaction
 // @route   POST /api/transactions
 // @access  Private
@@ -94,15 +84,18 @@ exports.createTransaction = async (req, res, next) => {
     
     // Create database record
     const dbTransaction = await Transaction.create({
-      hash: transaction.hash,
-      fromAddress: fromWallet.address,
-      toAddress,
-      amount,
-      signature: transaction.signature,
-      data: transaction.data,
-      status: 'pending',
-      qrCode
-    });
+    hash: transaction.hash,
+    fromAddress: fromWallet.address,
+    toAddress,
+    amount,
+    // Include product if provided
+    product: productId || undefined,
+    qrCode,
+    // Add these fields if you update your schema
+    signature: transaction.signature,
+    data: transaction.data,
+    status: 'pending'
+  });
     
     res.status(201).json({
       success: true,
@@ -194,7 +187,7 @@ exports.getMyTransactions = async (req, res, next) => {
         { fromAddress: wallet.address },
         { toAddress: wallet.address }
       ]
-    }).sort({ createdAt: -1 });
+    }).sort({ timestamp: -1 });
     
     // Enrich with blockchain data
     const enrichedTransactions = await Promise.all(
