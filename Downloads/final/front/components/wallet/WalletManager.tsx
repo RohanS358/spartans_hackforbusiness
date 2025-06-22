@@ -87,8 +87,7 @@ function TransferForm({ onSuccess }: { onSuccess?: () => void }) {
       
       await apiClient.transferFunds(
         transferData.recipientAddress, 
-        Number(transferData.amount),
-        transferData.productId || undefined
+        Number(transferData.amount)
       )
 
       toast({

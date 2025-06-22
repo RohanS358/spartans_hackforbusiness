@@ -1,8 +1,8 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 class ApiClient {
-  get(arg0: string): { data: any } | PromiseLike<{ data: any }> {
-    throw new Error("Method not implemented.")
+  async get(endpoint: string) {
+    return this.request(endpoint, { method: "GET" })
   }
   private getAuthHeaders() {
     const token = localStorage.getItem("token")
@@ -77,7 +77,7 @@ class ApiClient {
     })
   }
 
-  async transferFunds(recipientAddress: string, amount: number, p0: string | undefined) {
+  async transferFunds(recipientAddress: string, amount: number) {
     return this.request("/api/wallet/transfer", {
       method: "POST",
       body: JSON.stringify({ recipientAddress, amount }),

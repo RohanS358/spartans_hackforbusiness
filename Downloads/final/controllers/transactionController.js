@@ -1,4 +1,4 @@
-const Transaction = require('../models/Transaction');
+const Transaction = require('../models/transaction');
 const Wallet = require('../models/Wallet');
 const Blockchain = require('../blockchain/blockchain'); // Adjust path as needed
 const ErrorResponse = require('../utils/errorResponse');

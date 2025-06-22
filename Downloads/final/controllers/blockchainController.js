@@ -1,6 +1,6 @@
 const Blockchain = require('../blockchain/blockchain');
 const Wallet = require('../blockchain/wallet');
-const Transaction = require('../blockchain/transaction');
+const Transaction = require('../models/transaction');
 
 const blockchain = new Blockchain();
 

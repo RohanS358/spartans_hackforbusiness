@@ -59,4 +59,17 @@ const nextConfig = {
   }
 };
 
-module.exports = nextConfig;
+module.exports = {
+  // ...other Next.js config...
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.plugins.push(
+        new WorkboxPlugin.GenerateSW({
+          clientsClaim: true,
+          skipWaiting: true,
+        })
+      );
+    }
+    return config;
+  }
+};
