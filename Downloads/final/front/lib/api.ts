@@ -43,10 +43,9 @@ class ApiClient {
       body: JSON.stringify(userData),
     })
   }
-
   // Business endpoints
   async getBusinesses() {
-    return this.request("/api/business")
+    return this.request("/api/business/all")
   }
 
   async createBusiness(businessData: any) {
@@ -76,11 +75,15 @@ class ApiClient {
       }),
     })
   }
-
-  async transferFunds(recipientAddress: string, amount: number) {
-    return this.request("/api/wallet/transfer", {
+  async transferFunds(recipientAddress: string, amount: number, privateKey?: string, productId?: string) {
+    return this.request("/api/transactions", {
       method: "POST",
-      body: JSON.stringify({ recipientAddress, amount }),
+      body: JSON.stringify({ 
+        toAddress: recipientAddress, 
+        amount, 
+        encryptedPrivateKey: privateKey || 'default-private-key',
+        productId: productId || undefined
+      }),
     })
   }
 
@@ -118,6 +121,43 @@ class ApiClient {
     return this.request("/api/transactions", {
       method: "POST",
       body: JSON.stringify(transactionData),
+    })
+  }
+
+  // Credit endpoints
+  async getBusinessCredits(businessId: string) {
+    return this.request(`/api/credits/business/${businessId}`)
+  }
+
+  async getUserCredits() {
+    return this.request("/api/credits/user")
+  }
+
+  async issueCredits(businessId: string, amount: number, reason: string) {
+    return this.request("/api/credits/issue", {
+      method: "POST",
+      body: JSON.stringify({ businessId, amount, reason }),
+    })
+  }
+  async redeemCredits(businessId: string, amount: number, reason: string) {
+    return this.request("/api/credits/redeem", {
+      method: "POST",
+      body: JSON.stringify({ businessId, amount, reason }),
+    })
+  }
+
+  // Blockchain endpoints
+  async getBlockchainStats() {
+    return this.request("/api/blockchain/stats")
+  }
+
+  async getBlocks() {
+    return this.request("/api/blockchain/blocks")
+  }
+
+  async mineBlock() {
+    return this.request("/api/blockchain/mine", {
+      method: "POST",
     })
   }
 }

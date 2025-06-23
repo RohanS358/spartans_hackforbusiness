@@ -8,9 +8,9 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Blockchain E-Commerce Platform",
-  description: "A decentralized e-commerce platform with blockchain integration",
-    generator: 'v0.dev'
+  title: "LocalConnect - Discover Local Businesses",
+  description: "Build real relationships with local businesses through our unique credit system and blockchain-powered platform",
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({

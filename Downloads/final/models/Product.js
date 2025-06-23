@@ -6,12 +6,21 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a product name']
   },
-  category:{    
+  category: {    
     type: String,
     required: [true, 'Please add a category'],
-
+    enum: ['food', 'beverage', 'service', 'retail', 'experience', 'membership', 'credits']
   },
-  images:{
+  type: {
+    type: String,
+    enum: ['product', 'credit_package', 'membership', 'service'],
+    default: 'product'
+  },
+  creditValue: {
+    type: Number,
+    default: 0, // For credit packages, this represents how many credits user gets
+  },
+  images: {
     type: [String],
     required: [true, 'Please add at least one image'],
     validate: {
@@ -24,7 +33,7 @@ const ProductSchema = new mongoose.Schema({
   description: {
     type: String
   },
-  discount:{
+  discount: {
     type: Number,
     default: 0,
     min: [0, 'Discount cannot be negative'],
@@ -33,26 +42,24 @@ const ProductSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: [true, 'Please add a price']
-  },
-  seller: {
+  },  // Business-specific pricing and credits
+  business: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'sellerModel',
+    ref: 'Business',
     required: true
   },
   sellerModel: {
     type: String,
     required: true,
     enum: ['User', 'Business']
-  },
-  // Location data for map integration
+  },  // Location data for map integration (optional)
   location: {
     type: {
       type: String,
-      enum: ['Point'],
-      default: 'Point'
+      enum: ['Point']
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
+      type: [Number] // [longitude, latitude]
     }
   },
   createdAt: {

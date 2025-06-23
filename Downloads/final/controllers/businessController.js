@@ -86,6 +86,25 @@ exports.getMe = async (req, res, next) => {
   }
 };
 
+// @desc    Get all businesses (public)
+// @route   GET /api/business/all
+// @access  Public
+exports.getAllBusinesses = async (req, res, next) => {
+  try {
+    const businesses = await Business.find({})
+      .select('-password -__v')
+      .sort({ createdAt: -1 });
+    
+    res.status(200).json({
+      success: true,
+      count: businesses.length,
+      data: businesses
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Helper to send token response
 const sendTokenResponse = (business, statusCode, res) => {
   // Create token

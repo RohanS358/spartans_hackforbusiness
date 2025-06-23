@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { apiClient } from "@/lib/api"
 import { ArrowUpRight, ArrowDownLeft, Clock, Check, X, RefreshCw } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 
 interface Transaction {
   _id: string
@@ -22,7 +22,7 @@ interface Transaction {
   createdAt: string
 }
 
-export default function TransactionHistory() {
+export default function TransactionHistory({ refreshTrigger }: { refreshTrigger?: number }) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,11 +32,48 @@ export default function TransactionHistory() {
     try {
       setLoading(true)
       setError(null)
-      const { data } = await apiClient.get('/api/transactions')
-      setTransactions(data.data)
+      const response = await apiClient.get('/api/transactions')
+      console.log('Transaction response:', response) // Debug log
+      
+      // Handle the backend response structure: { success: true, count: X, data: [...] }
+      let transactionData = [];
+      
+      if (response.success && response.data) {
+        transactionData = response.data;
+      } else if (response.data && Array.isArray(response.data)) {
+        transactionData = response.data;
+      } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        transactionData = response.data.data;
+      }
+      
+      // Transform backend transactions to frontend format
+      const transformedTransactions = transactionData.map((tx: any) => ({
+        _id: tx._id,
+        type: tx.type, // Backend already provides this
+        amount: tx.amount,
+        status: tx.status || 'completed',
+        confirmations: tx.confirmations || 1,
+        productName: tx.product?.name,
+        fromAddress: tx.fromAddress,
+        toAddress: tx.toAddress,
+        hash: tx.hash,
+        createdAt: tx.createdAt || tx.timestamp
+      }))
+      
+      setTransactions(transformedTransactions)
+      
+      // Show toast if there are new transactions
+      if (refreshTrigger && transformedTransactions.length > 0) {
+        const latestTx = transformedTransactions[0]
+        toast({
+          title: "💰 Transaction History Updated",
+          description: `Latest: ${latestTx.type === 'incoming' ? 'Received' : 'Sent'} $${latestTx.amount}`,
+        })
+      }
     } catch (err) {
       console.error("Error loading transactions:", err)
       setError("Failed to load transactions")
+      setTransactions([]) // Ensure transactions is always an array
       toast({
         title: "Error",
         description: "Could not load transaction history",
@@ -49,7 +86,7 @@ export default function TransactionHistory() {
 
   useEffect(() => {
     loadTransactions()
-  }, [])
+  }, [refreshTrigger]) // Re-run when refreshTrigger changes
 
   const getStatusBadge = (status: string, confirmations: number) => {
     switch (status) {
@@ -106,83 +143,85 @@ export default function TransactionHistory() {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle>Transaction History</CardTitle>
-        <Button 
-          onClick={loadTransactions} 
-          variant="ghost" 
-          size="sm"
-          disabled={loading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </CardHeader>
-      <CardContent>
-        {transactions.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            No transactions found
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {transactions.map((tx) => (
-              <div 
-                key={tx._id} 
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-full ${
-                    tx.type === 'incoming' 
-                      ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300' 
-                      : 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
-                  }`}>
-                    {tx.type === 'incoming' ? (
-                      <ArrowDownLeft className="h-5 w-5" />
-                    ) : (
-                      <ArrowUpRight className="h-5 w-5" />
-                    )}
+    <TooltipProvider>
+      <Card>
+        <CardHeader className="flex flex-row justify-between items-center">
+          <CardTitle>Transaction History</CardTitle>
+          <Button 
+            onClick={loadTransactions} 
+            variant="ghost" 
+            size="sm"
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {!transactions || !Array.isArray(transactions) || transactions.length === 0 ? (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              {loading ? "Loading transactions..." : "No transactions found"}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {transactions.map((tx) => (
+                <div 
+                  key={tx._id} 
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-full ${
+                      tx.type === 'incoming' 
+                        ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300' 
+                        : 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
+                    }`}>
+                      {tx.type === 'incoming' ? (
+                        <ArrowDownLeft className="h-5 w-5" />
+                      ) : (
+                        <ArrowUpRight className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        {tx.productName || (tx.type === 'incoming' ? 'Received' : 'Payment')}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {tx.type === 'incoming' 
+                          ? `From: ${formatAddress(tx.fromAddress)}` 
+                          : `To: ${formatAddress(tx.toAddress)}`}
+                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 cursor-help">
+                            {new Date(tx.createdAt).toLocaleString()}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Tx Hash: {formatAddress(tx.hash)}</p>
+                          <p>Block: {tx.confirmations} confirmations</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-medium">
-                      {tx.productName || (tx.type === 'incoming' ? 'Received' : 'Payment')}
+                  <div className="text-right">
+                    <div className={`font-bold ${
+                      tx.type === 'incoming' 
+                        ? 'text-green-600 dark:text-green-400' 
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {tx.type === 'incoming' ? '+' : '-'}{tx.amount.toFixed(2)}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {tx.type === 'incoming' 
-                        ? `From: ${formatAddress(tx.fromAddress)}` 
-                        : `To: ${formatAddress(tx.toAddress)}`}
+                    <div className="mt-2">
+                      {getStatusBadge(tx.status, tx.confirmations)}
                     </div>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 cursor-help">
-                          {new Date(tx.createdAt).toLocaleString()}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Tx Hash: {formatAddress(tx.hash)}</p>
-                        <p>Block: {tx.confirmations} confirmations</p>
-                      </TooltipContent>
-                    </Tooltip>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className={`font-bold ${
-                    tx.type === 'incoming' 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {tx.type === 'incoming' ? '+' : '-'}{tx.amount.toFixed(2)}
-                  </div>
-                  <div className="mt-2">
-                    {getStatusBadge(tx.status, tx.confirmations)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   )
 }
 

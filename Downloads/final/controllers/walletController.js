@@ -178,8 +178,7 @@ exports.transferTokens = async (req, res, next) => {
         
         await senderWallet.save();
         await recipientWallet.save();
-        
-        res.status(200).json({
+          res.status(200).json({
             success: true,
             message: 'Transfer completed successfully',
             data: {
@@ -193,4 +192,47 @@ exports.transferTokens = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+// @desc    List all wallets (for debugging)
+// @route   GET /api/wallet/all
+// @access  Private (admin)
+exports.getAllWallets = async (req, res, next) => {
+  try {
+    const wallets = await Wallet.find({})
+      .select('address balance owner ownerModel createdAt');
+    
+    // Manually populate owner data based on ownerModel
+    const enrichedWallets = await Promise.all(wallets.map(async (wallet) => {
+      let ownerData = null;
+      
+      try {
+        if (wallet.ownerModel === 'User') {
+          const User = require('../models/User');
+          ownerData = await User.findById(wallet.owner).select('name email');
+        } else if (wallet.ownerModel === 'Business') {
+          const Business = require('../models/Business');
+          ownerData = await Business.findById(wallet.owner).select('name email');
+        }
+      } catch (error) {
+        console.log('Error populating wallet owner:', error.message);
+      }
+      
+      return {
+        address: wallet.address,
+        balance: wallet.balance,
+        ownerModel: wallet.ownerModel,
+        owner: ownerData || { name: 'Unknown', email: 'Unknown' },
+        createdAt: wallet.createdAt
+      };
+    }));
+    
+    res.status(200).json({
+      success: true,
+      count: enrichedWallets.length,
+      data: enrichedWallets
+    });
+  } catch (error) {
+    next(error);
+  }
 };

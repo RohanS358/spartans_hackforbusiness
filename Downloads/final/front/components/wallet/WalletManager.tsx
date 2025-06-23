@@ -75,7 +75,6 @@ function TransferForm({ onSuccess }: { onSuccess?: () => void }) {
       })
     }
   }
-
   const handleTransfer = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
     setLoading(true)
@@ -83,16 +82,27 @@ function TransferForm({ onSuccess }: { onSuccess?: () => void }) {
     try {
       // In a real app, you'd get the private key from secure storage
       // For now, we'll simulate this
-      const encryptedPrivateKey = localStorage.getItem('walletPrivateKey') || 'simulated-key'
+      const encryptedPrivateKey = localStorage.getItem('walletPrivateKey') || 'simulated-key-' + Date.now()
       
-      await apiClient.transferFunds(
+      // Show initial toast
+      toast({
+        title: "Transaction Starting",
+        description: `Sending $${transferData.amount} to ${transferData.recipientAddress.slice(0, 10)}...`,
+      })
+
+      const result = await apiClient.transferFunds(
         transferData.recipientAddress, 
-        Number(transferData.amount)
+        Number(transferData.amount),
+        encryptedPrivateKey,
+        transferData.productId || undefined
       )
 
+      console.log('Transfer result:', result)
+
+      // Show success toast with transaction details
       toast({
-        title: "Transaction Submitted",
-        description: "Your transaction is being processed on the blockchain",
+        title: "Transaction Successful!",
+        description: `✅ Sent $${transferData.amount} to ${transferData.recipientAddress.slice(0, 10)}...${transferData.recipientAddress.slice(-4)}`,
       })
 
       setTransferData({
@@ -103,8 +113,9 @@ function TransferForm({ onSuccess }: { onSuccess?: () => void }) {
 
       if (onSuccess) onSuccess()
     } catch (error) {
+      console.error('Transfer error:', error)
       toast({
-        title: "Transaction Failed",
+        title: "❌ Transaction Failed",
         description: error instanceof Error ? error.message : "Transfer failed",
         variant: "destructive"
       })

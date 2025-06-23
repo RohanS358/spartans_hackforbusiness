@@ -20,6 +20,7 @@ app.use('/api/business', require('./routes/businessRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
+app.use('/api/credits', require('./routes/creditRoutes'));
 app.use('/api/blockchain', blockchainRoutes)
 
 // Error handler

@@ -10,6 +10,16 @@ const TransactionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Add reference to sender wallet
+  fromId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Wallet'
+  },
+  // Add reference to recipient wallet
+  toId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Wallet'
+  },
   amount: {
     type: Number,
     required: true
@@ -31,6 +41,12 @@ const TransactionSchema = new mongoose.Schema({
   // QR code for transaction verification
   qrCode: {
     type: String
+  },
+  // Transaction status
+  status: {
+    type: String,
+    enum: ['pending', 'completed', 'failed'],
+    default: 'pending'
   }
 });
 
